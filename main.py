@@ -58,8 +58,8 @@ async def on_ready():
     # เริ่มงานที่เป็น loop ทันทีหลังจากที่บอทพร้อม
     update_loop.start()
 
-@bot.tree.add_command(name='ping')
-async def 
+# @bot.tree.add_command(name='ping')
+# async def 
 
 # คำสั่ง !path
 @bot.command()
