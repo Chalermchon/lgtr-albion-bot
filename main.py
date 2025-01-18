@@ -2,6 +2,10 @@ import discord
 from discord.ext import commands, tasks
 from datetime import datetime, timedelta
 import re
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # กำหนด Prefix และตั้งค่าบอท
 bot = commands.Bot(command_prefix="!", intents=discord.Intents.all())
@@ -53,6 +57,9 @@ async def on_ready():
 
     # เริ่มงานที่เป็น loop ทันทีหลังจากที่บอทพร้อม
     update_loop.start()
+
+@bot.tree.add_command(name='ping')
+async def 
 
 # คำสั่ง !path
 @bot.command()
@@ -184,4 +191,4 @@ async def update_loop():
         embed = calculate_closing_times(current_time, closing_times)
         await last_message.edit(embed=embed)
 
-bot.run('MTMzMDA5NjM5MTYyNzczNTA3MA.GGy2tY.F2BtJjFvQrmj4e2BCvPhSf4ksWDkb5pz70pVNA')
+bot.run(os.getenv('DISCORD_BOT_TOKEN'))
