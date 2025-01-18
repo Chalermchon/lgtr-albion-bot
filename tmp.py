@@ -55,7 +55,7 @@ async def ping(interaction: discord.Interaction):
 async def path(interaction: discord.Interaction, first_map: str, second_map: str):
     graph.add_edge(first_map, second_map)
     graph.add_edge(second_map, first_map)
-    await interaction.response.send_message(f"Set path '{first_map}' <> '{second_map}' successfully.")
+    await interaction.response.send_message(f"Set path `{first_map}` <> `{second_map}` successfully.")
 
 @client.tree.command()
 @app_commands.describe(
@@ -65,8 +65,8 @@ async def path(interaction: discord.Interaction, first_map: str, second_map: str
 async def route(interaction: discord.Interaction, from_map: str, to_map: str):
     try:
         shortest_path = nx.shortest_path(graph, source=from_map, target=to_map)
-        shortest_path = " -> ".join(shortest_path)
-        await interaction.response.send_message(f"Path from '{from_map}' to '{to_map}':\n{shortest_path}")
+        shortest_path = " -> ".join(map(lambda m: f'`{m}`', shortest_path))
+        await interaction.response.send_message(f"Path from `{from_map}` to `{to_map}`:\n{shortest_path}")
     except nx.NodeNotFound as e:
         missing_map = str(e).split(" ", 1)[1].replace("is not in G", "").strip()
         await interaction.response.send_message(f'{missing_map} is not set')
