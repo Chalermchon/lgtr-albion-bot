@@ -12,9 +12,11 @@ map_connection: dict[str, list[str]]
 this_dir = os.path.dirname(os.path.abspath(__file__))
 
 try:
-    with open(os.path.join(this_dir, "maps.json"), "r") as f:
+    with open(os.path.join(this_dir, "maps.json"), "r", encoding="utf-8") as f:
         maps = json.load(f)
-    with open(os.path.join(this_dir, "map_connection.json"), "r") as f:
+    with open(
+        os.path.join(this_dir, "map_connection.json"), "r", encoding="utf-8"
+    ) as f:
         map_connection = json.load(f)
 except Exception as e:
     print(f"error while opening map_connection or map json file: {e}")
