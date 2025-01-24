@@ -104,9 +104,9 @@ class RoadOfAva(commands.Cog):
             nearly_closed_datetime: datetime = None
             for index, map_id in enumerate(map_ids):
                 description += f">> **`{get_displayname(map_id)}`**"
-                if index != 0:
+                if index != len(map_ids) - 1:
                     closing_datetime = get_roa_portal_closing_datetime(
-                        map_id_a=map_ids[index - 1], map_id_b=map_id
+                        map_id_a=map_id, map_id_b=map_ids[index + 1]
                     )
                     if closing_datetime:
                         description += f"\n*close around {closing_datetime.strftime('%d %b, %H:%M:%S')} (UTC+7)*"
