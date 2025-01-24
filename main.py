@@ -25,7 +25,6 @@ async def on_ready():
     print("Bot is ready!")
 
     bot.tree.clear_commands(guild=None)
-    await bot.tree.sync()
 
     cogs = load_cogs()
 

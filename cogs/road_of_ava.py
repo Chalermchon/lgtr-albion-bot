@@ -1,5 +1,4 @@
 import os
-import asyncio
 from datetime import datetime, timezone, timedelta
 import discord
 from discord.ext import commands
@@ -31,7 +30,10 @@ class RoadOfAva(commands.Cog):
                 start_with_keyword.append(
                     discord.app_commands.Choice(name=displayname, value=id)
                 )
-            if displayname_without_symbol not in start_with_keyword and current.lower() in displayname_without_symbol.lower():
+            if (
+                id not in list(map(lambda m: m.to_dict()["value"], start_with_keyword))
+                and current.lower() in displayname_without_symbol.lower()
+            ):
                 contain_keyword.append(
                     discord.app_commands.Choice(name=displayname, value=id)
                 )
@@ -58,35 +60,42 @@ class RoadOfAva(commands.Cog):
         duration: str,
     ):
         closing_datetime = add_roa_portal(from_map, to_map, duration)
+        delete_in_seconds = (
+            closing_datetime - datetime.now(timezone(timedelta(hours=7)))
+        ).total_seconds()
 
         await interaction.response.send_message(
             embed=discord.Embed(
                 title=f"Portal between {get_displayname(from_map)} and {get_displayname(to_map)}",
-                description=f"Close around {closing_datetime.strftime('%d %b, %H:%M:%S')} (UTC+7).",
+                description=f"Close around {closing_datetime.strftime('%d %b, %H:%M')} (UTC+7).",
                 colour=discord.Colour.green(),
-            )
+            ),
+            delete_after=delete_in_seconds,
         )
-        timer = (
-            closing_datetime - datetime.now(timezone(timedelta(hours=7)))
-        ).total_seconds()
 
-        async def edit_message_when_almost_close():
-            EDIT_WHEN_TIME_LEFT_SECOND = 30 * 60  # 30 mins
-            await asyncio.sleep(timer - EDIT_WHEN_TIME_LEFT_SECOND)
-            await interaction.edit_original_response(
-                embed=discord.Embed(
-                    title=f"Portal between `{get_displayname(from_map)}` and `{get_displayname(to_map)}`",
-                    description=f"Close around {closing_datetime.strftime('%d %b, %H:%M:%S')} (UTC+7).",
-                    colour=discord.Colour.yellow(),
-                )
-            )
+        # async def edit_message_when_almost_close():
+        #     EDIT_WHEN_TIME_LEFT_SECOND = 30 * 60  # 30 mins
+        #     await asyncio.sleep(timer - EDIT_WHEN_TIME_LEFT_SECOND)
+        #     message = await client.get_channel(channel_id).fetch_message(
+        #         sent_message_id
+        #     )
+        #     await message.edit(
+        #         embed=discord.Embed(
+        #             title=f"Portal between `{get_displayname(from_map)}` and `{get_displayname(to_map)}`",
+        #             description=f"Close around {closing_datetime.strftime('%d %b, %H:%M')} (UTC+7).",
+        #             colour=discord.Colour.yellow(),
+        #         )
+        #     )
 
-        async def remove_message_when_already_closed():
-            await asyncio.sleep(timer)
-            await interaction.delete_original_response()
+        # async def remove_message_when_already_closed():
+        #     await asyncio.sleep(timer)
+        #     message = await client.get_channel(channel_id).fetch_message(
+        #         sent_message_id
+        #     )
+        #     await message.delete()
 
-        asyncio.ensure_future(edit_message_when_almost_close())
-        asyncio.ensure_future(remove_message_when_already_closed())
+        # asyncio.ensure_future(edit_message_when_almost_close())
+        # asyncio.ensure_future(remove_message_when_already_closed())
 
     @discord.app_commands.command(name="route", description="Get route between maps.")
     @discord.app_commands.describe(
@@ -109,7 +118,7 @@ class RoadOfAva(commands.Cog):
                         map_id_a=map_id, map_id_b=map_ids[index + 1]
                     )
                     if closing_datetime:
-                        description += f"\n*close around {closing_datetime.strftime('%d %b, %H:%M:%S')} (UTC+7)*"
+                        description += f"\n*Portal will close around {closing_datetime.strftime('%d %b, %H:%M')} (UTC+7)*"
                         if (
                             nearly_closed_datetime == None
                             or closing_datetime < nearly_closed_datetime
@@ -117,26 +126,28 @@ class RoadOfAva(commands.Cog):
                             nearly_closed_datetime = closing_datetime
                 description += "\n"
 
+            delete_in_second = (
+                nearly_closed_datetime - datetime.now(timezone(timedelta(hours=7)))
+            ).total_seconds()
             await interaction.response.send_message(
                 embed=discord.Embed(
                     title=f"Route from `{get_displayname(from_map)}` to `{get_displayname(to_map)}`.",
                     description=description,
                     color=discord.Colour.blue(),
-                )
+                ),
+                delete_after=delete_in_second,
             )
 
-            if nearly_closed_datetime:
+            # if nearly_closed_datetime:
 
-                async def remove_message_when_already_closed():
-                    await asyncio.sleep(
-                        (
-                            closing_datetime
-                            - datetime.now(timezone(timedelta(hours=7)))
-                        ).total_seconds()
-                    )
-                    await interaction.delete_original_response()
+            #     async def remove_message_when_already_closed():
+            #         timer = (
+            #             closing_datetime - datetime.now(timezone(timedelta(hours=7)))
+            #         ).total_seconds()
+            #         await asyncio.sleep(timer)
+            #         await interaction.delete_original_response()
 
-                asyncio.ensure_future(remove_message_when_already_closed())
+            #     asyncio.ensure_future(remove_message_when_already_closed())
 
         except (MapNotFound, NoRoute) as e:
             if isinstance(e, MapNotFound):
@@ -145,21 +156,23 @@ class RoadOfAva(commands.Cog):
                     embed=discord.Embed(
                         title=f"`{get_displayname(missing_map)}` was not set.",
                         colour=discord.Colour.red(),
-                    )
+                    ),
+                    delete_after=10,
                 )
             else:
                 await interaction.response.send_message(
                     embed=discord.Embed(
                         title=f"No route from `{get_displayname(from_map)}` to `{get_displayname(to_map)}`.",
                         colour=discord.Colour.red(),
-                    )
+                    ),
+                    delete_after=10,
                 )
 
-            async def remove_message_when_already_closed():
-                await asyncio.sleep(10)
-                await interaction.delete_original_response()
+            # async def remove_message_when_already_closed():
+            #     await asyncio.sleep(10)
+            #     await interaction.delete_original_response()
 
-            asyncio.ensure_future(remove_message_when_already_closed())
+            # asyncio.ensure_future(remove_message_when_already_closed())
 
 
 async def setup(bot: commands.Bot):
@@ -169,6 +182,8 @@ async def setup(bot: commands.Bot):
         enabled_cogs = settings.get("enabled_cogs", [])
         if cog in enabled_cogs:
             guild = bot.get_guild(int(guild_id))
+            if guild == None:
+                continue
             guilds.append(guild)
             print(f"- Syncing '{cog}' cog for guild '{guild.name}' (ID: {guild.id}).")
 

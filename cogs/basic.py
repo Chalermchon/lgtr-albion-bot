@@ -11,7 +11,8 @@ class Basic(commands.Cog):
     @discord.app_commands.command(name="ping", description="Check the connection.")
     async def ping(self, interaction: discord.Interaction):
         await interaction.response.send_message(
-            f"Hi, {interaction.user.mention}!\nI'm ready for your command."
+            f"Hi, {interaction.user.mention}!\nI'm ready for your command.",
+            delete_after=30
         )
 
 
@@ -22,6 +23,9 @@ async def setup(bot: commands.Bot):
         enabled_cogs = settings.get("enabled_cogs", [])
         if cog in enabled_cogs:
             guild = bot.get_guild(int(guild_id))
+            if guild == None:
+                print(f"error: guild '{guild_id}' not found.")
+                continue
             guilds.append(guild)
             print(f"- Syncing '{cog}' cog for guild '{guild.name}' (ID: {guild.id}).")
 
