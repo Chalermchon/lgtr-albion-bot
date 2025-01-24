@@ -25,13 +25,13 @@ class RoadOfAva(commands.Cog):
         contain_keyword = []
         for id, displayname in get_maps().items():
             displayname_without_symbol = " ".join(displayname.split(" ")[1:])
-            if len(start_with_keyword) == 15:
+            if len(start_with_keyword + contain_keyword) == 15:
                 break
             if displayname_without_symbol.lower().startswith(current.lower()):
                 start_with_keyword.append(
                     discord.app_commands.Choice(name=displayname, value=id)
                 )
-            if current.lower() in displayname_without_symbol.lower():
+            if displayname_without_symbol not in start_with_keyword and current.lower() in displayname_without_symbol.lower():
                 contain_keyword.append(
                     discord.app_commands.Choice(name=displayname, value=id)
                 )
